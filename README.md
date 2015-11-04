@@ -29,15 +29,15 @@ This is a tiny virtual machine (based on MIPS) as a practice for myself.
 
   * **R-format**
 
-    6(OPCODE) + 5 + 5 + 5 + 6(FUNCT) = 32 bits
+    6(opcode) + 5(op0) + 5(op1) + 5(op2) + 6(funct) = 32 bits
     
   * **I-format**
 
-    6(OPCODE) + 5 + 5 + 5 + 16 = 32 bits
+    6(opcode) + 5(op0) + 5(op1) + 16(const) = 32 bits
     
   * **J-format**
 
-    6(OPCODE) + 26 = 32 bits
+    6(opcode) + 26(addr) = 32 bits
 
 
   | NAME	  | FORMAT		| OPCODE/FUNCT(hex)	|
