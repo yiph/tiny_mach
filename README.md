@@ -29,11 +29,11 @@ This is a tiny virtual machine (based on MIPS) as a practice for myself.
 
   * **R-format**
 
-    6(opcode) + 5(op0) + 5(op1) + 5(op2) + 6(funct) = 32 bits
+    6(opcode) + 5(reg0) + 5(reg1) + 5(reg2) + 5(shamt) + 6(funct) = 32 bits
     
   * **I-format**
 
-    6(opcode) + 5(op0) + 5(op1) + 16(const) = 32 bits
+    6(opcode) + 5(reg0) + 5(reg1) + 16(const) = 32 bits
     
   * **J-format**
 
@@ -62,13 +62,14 @@ This is a tiny virtual machine (based on MIPS) as a practice for myself.
   | slt		  | R			| 00/0d				|
   | slti	  | I			| 09				|
   | seq		  | R			| 00/0e				|
-  | lui		  | I			| 0a				|
-  | lw		  | I			| 0b				|
-  | sw		  | I			| 0c				|
-  | bze		  | I			| 0d				|
-  | bnz		  | I			| 0e				|
+  | seqi	  | I			| 0a				|
+  | lui		  | I			| 0b				|
+  | lw		  | I			| 0c				|
+  | sw		  | I			| 0d				|
+  | bze		  | I			| 0e				|
+  | bnz		  | I			| 0f				|
   | j		  | J			| 01				|
   | jal		  | J			| 02				|
-  | jr		  | I			| 0f				|
+  | jr		  | I			| 10				|
   | syscall	  | J			| 03				|
 
