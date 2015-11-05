@@ -25,7 +25,7 @@ This is a tiny virtual machine (based on MIPS) as a practice for myself.
   * LO, HI
 
 
-  ## The Instruction Set
+## The Instruction Set
 
   * **R-format**
 
