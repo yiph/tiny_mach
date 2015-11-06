@@ -70,6 +70,6 @@ This is a tiny virtual machine (based on MIPS) as a practice for myself.
   | bnz		  | I			| 0f				|
   | j		  | J			| 01				|
   | jal		  | J			| 02				|
-  | jr		  | I			| 10				|
+  | jr		  | R			| 00/0f				|
   | syscall	  | J			| 03				|
 

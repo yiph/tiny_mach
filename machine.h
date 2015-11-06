@@ -5,14 +5,13 @@
 
 /* define the machine */
 
-typedef uint32_t memo_t; /* require an unsigned type */
 #define MEMORY_SIZE 0x1000000
 
 struct machine {
-    memo_t pc;
-    memo_t gpr[32];
-    memo_t lo, hi;
-    memo_t memory[MEMORY_SIZE];
+    uint32_t pc;
+    uint32_t gpr[32];
+    uint32_t lo, hi;
+    uint32_t memory[MEMORY_SIZE];
 };
 
 /* define operations for instructions: */
@@ -35,7 +34,7 @@ struct machine {
 #define ADDR_OFFSET   0
 
 #define FIELD(FIELD_NAME, ins)                                          \
-    (((memo_t) ((ins) & FIELD_NAME##_FIELD)) >> FIELD_NAME##_OFFSET)
+    (((uint32_t) ((ins) & FIELD_NAME##_FIELD)) >> FIELD_NAME##_OFFSET)
 #define OPCODE(ins) FIELD(OPCODE, ins)
 #define REG0(ins)   FIELD(REG0,   ins)
 #define REG1(ins)   FIELD(REG1,   ins)
@@ -52,39 +51,40 @@ struct machine {
 #define MAX_FUNCT  0x0E
 
 /* opcode */
-#define R_FMT   0x00
-#define J       0x01
-#define JAL     0x02
-#define SYSCALL 0x03
-#define ADDI    0x05
-#define SUBI    0x06
-#define ANDI    0x07
-#define ORI     0x08
-#define SLTI    0x09
-#define SEQI    0x0A
-#define LUI     0x0B
-#define LW      0x0C
-#define SW      0x0D
-#define BZE     0x0E
-#define BNZ     0x0F
-#define JR      0x10
+#define _rfmt_    0x00
+#define _j_       0x01
+#define _jal_     0x02
+#define _syscall_ 0x03
+#define _addi_    0x05
+#define _subi_    0x06
+#define _andi_    0x07
+#define _ori_     0x08
+#define _slti_    0x09
+#define _seqi_    0x0A
+#define _lui_     0x0B
+#define _lw_      0x0C
+#define _sw_      0x0D
+#define _bze_     0x0E
+#define _bnz_     0x0F
+
 
 /* R-format funct. */
-#define MOVE    0x00
-#define ADD     0x01
-#define SUB     0x02
-#define MUL     0x03
-#define DIV     0x04
-#define MFLO    0x05
-#define MFHI    0x06
-#define SLL     0x07
-#define SRL     0x08
-#define SRA     0x09
-#define AND     0x0A
-#define OR      0x0B
-#define NOT     0x0C
-#define SLT     0x0D
-#define SEQ     0x0E
+#define _move_    0x00
+#define _add_     0x01
+#define _sub_     0x02
+#define _mul_     0x03
+#define _div_     0x04
+#define _mflo_    0x05
+#define _mfhi_    0x06
+#define _sll_     0x07
+#define _srl_     0x08
+#define _sra_     0x09
+#define _and_     0x0A
+#define _or_      0x0B
+#define _not_     0x0C
+#define _slt_     0x0D
+#define _seq_     0x0E
+#define _jr_      0x0F
 
 
 #endif /* _MACHINE_H_ */
