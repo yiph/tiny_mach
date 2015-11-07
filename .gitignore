@@ -1,6 +1,4 @@
-*.gitignore~
-*.md~
-*.h~
-*.c~
+*~
+#*#
 *.exe
 *.gch
