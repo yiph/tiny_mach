@@ -54,11 +54,12 @@
 
 #define ASSIGN_FUND_DISPATCH_OP(OP_NAME)        \
     fund_dispatch[_##OP_NAME##_] = OP_NAME##_f
-#define INIT_FUND_DISPATCH OP_SET_FUND(ASSIGN_FUND_DISPATCH)
+#define INIT_FUND_DISPATCH() do { OP_SET_FUND(ASSIGN_FUND_DISPATCH); } while(0)
+
 
 #define ASSIGN_RFMT_DISPATCH_OP(OP_NAME)        \
     rfmt_dispatch[_##OP_NAME##_] = OP_NAME##_f
-#define INIT_RFMT_DISPATCH OP_SET_RFMT(ASSIGN_RFMT_DISPATCH)
+#define INIT_RFMT_DISPATCH() do { OP_SET_RFMT(ASSIGN_RFMT_DISPATCH); } while(0)
 
 
 DECLARE_INS_F; // Declare all functions of form INS_f
@@ -99,8 +100,8 @@ void load_instruction_i(uint32_t ins[], int n, MACHINE * mach)
 
 int run_machine(MACHINE *mach)
 {
-    INIT_FUND_DISPATCH;
-    INIT_RFMT_DISPATCH;
+    INIT_FUND_DISPATCH();
+    INIT_RFMT_DISPATCH();
     uint32_t *pc_ptr = &mach->pc;
 
     for (*pc_ptr = 0; *pc_ptr < MEMORY_SIZE; (*pc_ptr)++) {
