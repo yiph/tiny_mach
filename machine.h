@@ -14,6 +14,14 @@ typedef struct machine {
     uint32_t memory[MEMORY_SIZE];
 } MACHINE;
 
+/* Interfaces to runmachine */
+void init_environment();
+MACHINE *make_machine();
+void free_machine(MACHINE *mach);
+void init_machine(MACHINE *mach);
+void load_memory(int32_t words[], int length, MACHINE *mach, int start_addr);
+int run_machine(MACHINE *mach);
+
 #define _nil_         0 // for unused part of instruction
 #define _at_          0
 #define _k0_          1
@@ -52,7 +60,7 @@ typedef struct machine {
     ((uint32_t) ((_##OP_NAME##_ << OPCODE_OFFSET)        \
                | (_##R0##_ << REG0_OFFSET)               \
                | (_##R1##_ << REG1_OFFSET)               \
-               | (((uint32_t) (C)) << CONST_OFFSET)))
+               | ((((uint32_t) (C)) << CONST_OFFSET) & 0x0000FFFF)))
 
 #define RFMT_INS(FUNCT_NAME, R0, R1, R2, SHA)            \
     ((uint32_t) ((_rfmt_ << OPCODE_OFFSET)               \
@@ -66,9 +74,10 @@ typedef struct machine {
     ((uint32_t) ((_##OP_NAME##_ << OPCODE_OFFSET)        \
                | (((uint32_t) (A)) << ADDR_OFFSET)))
 
+#define SYSCALL_INS(OP_NAME)                             \
+    JFMT_INS(syscall, _##OP_NAME##_)
 
 /* define operations for instructions: */
-
 #define OPCODE_FIELD  0xFC000000
 #define OPCODE_OFFSET 26
 #define REG0_FIELD    0x03E00000
@@ -99,9 +108,9 @@ typedef struct machine {
 
 
 /* codes for instructions: */
-
-#define MAX_OPCODE 0x11
-#define MAX_FUNCT  0x10
+#define MAX_OPCODE  0x11
+#define MAX_FUNCT   0x10
+#define MAX_SYSCALL 100
 
 /* opcode */
 #define _rfmt_    0x00
@@ -109,19 +118,17 @@ typedef struct machine {
 #define _jal_     0x02
 #define _syscall_ 0x03
 #define _addi_    0x05
-#define _subi_    0x06
-#define _andi_    0x07
-#define _ori_     0x08
-#define _slti_    0x09
-#define _seqi_    0x0A
-#define _li_      0x0B
-#define _lli_     0x0C
-#define _lui_     0x0D
-#define _lw_      0x0E
-#define _sw_      0x0F
-#define _bze_     0x10
-#define _bnz_     0x11
-
+#define _andi_    0x06
+#define _ori_     0x07
+#define _slti_    0x08
+#define _seqi_    0x09
+#define _li_      0x0A
+#define _lli_     0x0B
+#define _lui_     0x0C
+#define _lw_      0x0D
+#define _sw_      0x0E
+#define _bze_     0x0F
+#define _bnz_     0x10
 
 /* R-format funct. */
 #define _nop_     0x00
@@ -142,5 +149,10 @@ typedef struct machine {
 #define _seq_     0x0F
 #define _jr_      0x10
 
+/* Syscall */
+#define _sys_newline_      0
+#define _sys_print_int_    1
+#define _sys_print_hex_    2
+#define _sys_read_int_     3
 
 #endif /* _MACHINE_H_ */

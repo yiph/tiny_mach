@@ -14,7 +14,6 @@
     SENT##_OP(jal);                                     \
     SENT##_OP(syscall);                                 \
     SENT##_OP(addi);                                    \
-    SENT##_OP(subi);                                    \
     SENT##_OP(andi);                                    \
     SENT##_OP(ori);                                     \
     SENT##_OP(slti);                                    \
@@ -56,61 +55,32 @@
     fund_dispatch[_##OP_NAME##_] = OP_NAME##_f
 #define INIT_FUND_DISPATCH() do { OP_SET_FUND(ASSIGN_FUND_DISPATCH); } while(0)
 
-
 #define ASSIGN_RFMT_DISPATCH_OP(OP_NAME)        \
     rfmt_dispatch[_##OP_NAME##_] = OP_NAME##_f
 #define INIT_RFMT_DISPATCH() do { OP_SET_RFMT(ASSIGN_RFMT_DISPATCH); } while(0)
 
-
+/* Declaration */
 DECLARE_INS_F; // Declare all functions of form INS_f
-void (*fund_dispatch[MAX_OPCODE + 1])(uint32_t ins, MACHINE *mach);
-void (*rfmt_dispatch[MAX_FUNCT + 1])(uint32_t ins, MACHINE *mach);
+static void (*fund_dispatch[MAX_OPCODE + 1])(uint32_t ins, MACHINE *mach);
+static void (*rfmt_dispatch[MAX_FUNCT + 1])(uint32_t ins, MACHINE *mach);
+static void (*syscall_dispatch[MAX_SYSCALL + 1])(uint32_t ins, MACHINE *mach);
 
-void init_machine(MACHINE *mach);
-int run_machine(MACHINE *mach);
-
-void load_instruction_i(uint32_t ins[], int n, MACHINE * mach); // for test
-
-
-int main(void)
-{
-    MACHINE *mach = malloc(sizeof(MACHINE));
-    init_machine(mach);
-    #if 1
-    uint32_t test_ins[1000] = {
-        IFMT_INS(li, a0, nil, 1),
-        IFMT_INS(li, a1, nil, 2),
-        RFMT_INS(add, a0, a1, a0, 0),
-        JFMT_INS(syscall, 0)
-    };
-    
-    load_instruction_i(test_ins, 1000, mach);
-    #endif
-    run_machine(mach);
-    
-    return 0;
-}
-
-void load_instruction_i(uint32_t ins[], int n, MACHINE * mach)
-{
-    for (int i = 0; i < n; i++)
-        mach->memory[i] = ins[i];
-}
+// Declare syscall functions
+void sys_newline(uint32_t ins, MACHINE *mach);
+void sys_print_int(uint32_t ins, MACHINE *mach);
+void sys_print_hex(uint32_t ins, MACHINE *mach);
+void sys_read_int(uint32_t ins, MACHINE *mach);
 
 
-int run_machine(MACHINE *mach)
+/* function bodies */
+void init_environment()
 {
     INIT_FUND_DISPATCH();
     INIT_RFMT_DISPATCH();
-    uint32_t *pc_ptr = &mach->pc;
-
-    for (*pc_ptr = 0; *pc_ptr < MEMORY_SIZE; (*pc_ptr)++) {
-        uint32_t ins = mach->memory[*pc_ptr];
-        fund_dispatch[OPCODE(ins)](ins, mach);
-    }
-    
-    return 0;
-    
+    syscall_dispatch[_sys_newline_]   = sys_newline;
+    syscall_dispatch[_sys_print_int_] = sys_print_int;
+    syscall_dispatch[_sys_print_hex_] = sys_print_hex;
+    syscall_dispatch[_sys_read_int_]  = sys_read_int;
 }
 
 void init_machine(MACHINE *mach)
@@ -121,14 +91,48 @@ void init_machine(MACHINE *mach)
     int i;
     for (i = 0; i < 32; i++)
         mach->gpr[i] = 0;
+    mach->gpr[_sp_] = 0xFF;
     for (i = 0; i < MEMORY_SIZE; i++)
         mach->memory[i] = 0;
 }
 
-    
+MACHINE *make_machine()
+{
+    return (MACHINE *) malloc(sizeof(MACHINE));
+}
+
+void free_machine(MACHINE *mach)
+{
+    free(mach);
+}
+
+void load_memory(int32_t words[], int length, MACHINE *mach, int start_addr)
+{
+    for (int addr = start_addr, i = 0; i < length && addr < MEMORY_SIZE; addr++, i++)
+        mach->memory[addr] = words[i];
+}
+
+
+int run_machine(MACHINE *mach)
+{
+    uint32_t *pc_ptr = &mach->pc;
+    for (*pc_ptr = 0; *pc_ptr < MEMORY_SIZE; (*pc_ptr)++) {
+        #if 0
+        printf(">>> Running Line %d ... ra: %d\n",*pc_ptr, mach->gpr[_ra_]);
+        for (int i = 1; i < 11; i++)
+            printf("%2d ", mach->memory[0xFF-i]);
+        printf("\n");
+        for (int i = 1; i < 11; i++)
+            printf((mach->gpr[_sp_] == 0xFF-i) ? " ^ " : "   ");
+        printf("\n");
+        #endif
+        uint32_t ins = mach->memory[*pc_ptr];
+        fund_dispatch[OPCODE(ins)](ins, mach);
+    }
+    return 0;
+}
 
 /* Implementations of instructions */
-
 void rfmt_f(uint32_t ins, MACHINE *mach)
 { rfmt_dispatch[FUNCT(ins)](ins, mach); }
 
@@ -139,25 +143,22 @@ void jal_f(uint32_t ins, MACHINE *mach)
 { mach->gpr[_ra_] = mach->pc + 1; mach->pc = ADDR(ins) - 1; }
 
 void syscall_f(uint32_t ins, MACHINE *mach)
-{ printf("%d\t(0x%08x)\n", mach->gpr[_a0_], mach->gpr[_a0_]); }
+{ syscall_dispatch[ADDR(ins)](ins, mach); }
 
 void addi_f(uint32_t ins, MACHINE *mach)
-{ mach->gpr[REG0(ins)] = mach->gpr[REG1(ins)] + CONST(ins); }
-
-void subi_f(uint32_t ins, MACHINE *mach)
-{ mach->gpr[REG0(ins)] = mach->gpr[REG1(ins)] - CONST(ins); }
+{ mach->gpr[REG0(ins)] = mach->gpr[REG1(ins)] + ((int16_t) CONST(ins)); }
 
 void andi_f(uint32_t ins, MACHINE *mach)
-{ mach->gpr[REG0(ins)] = mach->gpr[REG1(ins)] & CONST(ins); }
+{ mach->gpr[REG0(ins)] = mach->gpr[REG1(ins)] & ((int16_t) CONST(ins)); }
 
 void ori_f(uint32_t ins, MACHINE *mach)
-{ mach->gpr[REG0(ins)] = mach->gpr[REG1(ins)] | CONST(ins); }
+{ mach->gpr[REG0(ins)] = mach->gpr[REG1(ins)] | ((int16_t) CONST(ins)); }
 
 void slti_f(uint32_t ins, MACHINE *mach)
-{ mach->gpr[REG0(ins)] = mach->gpr[REG1(ins)] < CONST(ins); }
+{ mach->gpr[REG0(ins)] = mach->gpr[REG1(ins)] < ((int32_t) CONST(ins)); }
 
 void seqi_f(uint32_t ins, MACHINE *mach)
-{ mach->gpr[REG0(ins)] = mach->gpr[REG1(ins)] == CONST(ins); }
+{ mach->gpr[REG0(ins)] = mach->gpr[REG1(ins)] == ((int32_t) CONST(ins)); }
 
 void li_f(uint32_t ins, MACHINE *mach)
 { mach->gpr[REG0(ins)] = CONST(ins); }
@@ -169,10 +170,10 @@ void lui_f(uint32_t ins, MACHINE *mach)
 { mach->gpr[REG0(ins)] = (CONST(ins) << 16) | (mach->gpr[REG0(ins)] & 0x0000FFFF); }
 
 void lw_f(uint32_t ins, MACHINE *mach)
-{ mach->memory[CONST(ins) + mach->gpr[REG1(ins)]] = mach->gpr[REG0(ins)]; }
+{ mach->gpr[REG0(ins)] = mach->memory[CONST(ins) + mach->gpr[REG1(ins)]]; }
 
 void sw_f(uint32_t ins, MACHINE *mach)
-{ mach->gpr[REG0(ins)] = mach->memory[CONST(ins) + mach->gpr[REG1(ins)]]; }
+{ mach->memory[CONST(ins) + mach->gpr[REG1(ins)]] = mach->gpr[REG0(ins)]; }
 
 void bze_f(uint32_t ins, MACHINE *mach)
 { if (mach->gpr[REG0(ins)] == 0)  mach->pc = mach->pc + CONST(ins); }
@@ -195,7 +196,7 @@ void sub_f(uint32_t ins, MACHINE *mach)
 
 void mul_f(uint32_t ins, MACHINE *mach)
 {
-    uint64_t product = mach->gpr[REG0(ins)] + mach->gpr[REG1(ins)];
+    uint64_t product = mach->gpr[REG0(ins)] * mach->gpr[REG1(ins)];
     mach->lo = product & 0x00000000FFFFFFFF;
     mach->hi = product >> 32;
 }
@@ -238,3 +239,19 @@ void seq_f(uint32_t ins, MACHINE *mach)
 
 void jr_f(uint32_t ins, MACHINE *mach)
 { mach->pc = mach->gpr[REG0(ins)] - 1; }
+
+// Syscall
+void sys_newline(uint32_t ins, MACHINE *mach)
+{ putchar('\n'); }
+
+void sys_print_int(uint32_t ins, MACHINE *mach)
+{ printf("%d", mach->gpr[_a0_]); }
+
+void sys_print_hex(uint32_t ins, MACHINE *mach)
+{ printf("%08x", mach->gpr[_a0_]); }
+
+void sys_read_int(uint32_t ins, MACHINE *mach)
+{ scanf("%d", mach->gpr + _v0_); }
+
+    
+    

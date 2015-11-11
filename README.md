@@ -47,7 +47,6 @@ This is a tiny virtual machine (based on MIPS) as a practice for myself.
   | add		  | R			| 00/02				|
   | addi	  | I			| 05				|
   | sub		  | R			| 00/03				|
-  | subi	  | I			| 06				|
   | mul		  | R			| 00/04				|
   | div		  | R			| 00/05				|
   | mflo	  | R			| 00/06				|
@@ -56,21 +55,21 @@ This is a tiny virtual machine (based on MIPS) as a practice for myself.
   | srl		  | R			| 00/09				|
   | sra		  | R			| 00/0a				|
   | and		  | R			| 00/0b				|
-  | andi	  | I			| 07				|
+  | andi	  | I			| 06				|
   | or		  | R			| 00/0c				|
-  | ori		  | I			| 08				|
+  | ori		  | I			| 07				|
   | not		  | R			| 00/0d				|
   | slt		  | R			| 00/0e				|
-  | slti	  | I			| 09				|
+  | slti	  | I			| 08				|
   | seq		  | R			| 00/0f				|
-  | seqi	  | I			| 0a				|
-  | li		  | I			| 0b				|
-  | lli		  | I			| 0c				|
-  | lui		  | I			| 0d				|
-  | lw		  | I			| 0e				|
-  | sw		  | I			| 0f				|
-  | bze		  | I			| 10				|
-  | bnz		  | I			| 11				|
+  | seqi	  | I			| 09				|
+  | li		  | I			| 0a				|
+  | lli		  | I			| 0b				|
+  | lui		  | I			| 0c				|
+  | lw		  | I			| 0d				|
+  | sw		  | I			| 0e				|
+  | bze		  | I			| 0f				|
+  | bnz		  | I			| 10				|
   | j		  | J			| 01				|
   | jal		  | J			| 02				|
   | jr		  | R			| 00/10				|
