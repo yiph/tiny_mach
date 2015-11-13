@@ -7,45 +7,7 @@
 #define FLAG(S) printf(#S"\n")
 #define PRINT(I) printf("%d\n", (I))
 
-/* Macros for generating codes about listing instructions */
-#define OP_SET_FUND(SENT)                               \
-    SENT##_OP(rfmt);                                    \
-    SENT##_OP(j);                                       \
-    SENT##_OP(jal);                                     \
-    SENT##_OP(syscall);                                 \
-    SENT##_OP(addi);                                    \
-    SENT##_OP(andi);                                    \
-    SENT##_OP(ori);                                     \
-    SENT##_OP(slti);                                    \
-    SENT##_OP(seqi);                                    \
-    SENT##_OP(li);                                      \
-    SENT##_OP(lli);                                     \
-    SENT##_OP(lui);                                     \
-    SENT##_OP(lw);                                      \
-    SENT##_OP(sw);                                      \
-    SENT##_OP(bze);                                     \
-    SENT##_OP(bnz)
-#define OP_SET_RFMT(SENT)                               \
-    SENT##_OP(nop);                                     \
-    SENT##_OP(move);                                    \
-    SENT##_OP(add);                                     \
-    SENT##_OP(sub);                                     \
-    SENT##_OP(mul);                                     \
-    SENT##_OP(div);                                     \
-    SENT##_OP(mflo);                                    \
-    SENT##_OP(mfhi);                                    \
-    SENT##_OP(sll);                                     \
-    SENT##_OP(srl);                                     \
-    SENT##_OP(sra);                                     \
-    SENT##_OP(and);                                     \
-    SENT##_OP(or);                                      \
-    SENT##_OP(not);                                     \
-    SENT##_OP(slt);                                     \
-    SENT##_OP(seq);                                     \
-    SENT##_OP(jr)
-#define OP_SET_ALL(SENT)                                \
-    OP_SET_FUND(SENT);                                  \
-    OP_SET_RFMT(SENT)
+
 
 #define DECLARE_FUNCT_OP(OP_NAME)                                 \
     void OP_NAME##_f(uint32_t ins, MACHINE *mach)
@@ -66,17 +28,18 @@ static void (*rfmt_dispatch[MAX_FUNCT + 1])(uint32_t ins, MACHINE *mach);
 static void (*syscall_dispatch[MAX_SYSCALL + 1])(uint32_t ins, MACHINE *mach);
 
 // Declare syscall functions
+void sys_halt(uint32_t ins, MACHINE *mach);
 void sys_newline(uint32_t ins, MACHINE *mach);
 void sys_print_int(uint32_t ins, MACHINE *mach);
 void sys_print_hex(uint32_t ins, MACHINE *mach);
 void sys_read_int(uint32_t ins, MACHINE *mach);
-
 
 /* function bodies */
 void init_environment()
 {
     INIT_FUND_DISPATCH();
     INIT_RFMT_DISPATCH();
+    syscall_dispatch[_sys_halt_]      = sys_halt;
     syscall_dispatch[_sys_newline_]   = sys_newline;
     syscall_dispatch[_sys_print_int_] = sys_print_int;
     syscall_dispatch[_sys_print_hex_] = sys_print_hex;
@@ -241,6 +204,9 @@ void jr_f(uint32_t ins, MACHINE *mach)
 { mach->pc = mach->gpr[REG0(ins)] - 1; }
 
 // Syscall
+void sys_halt(uint32_t ins, MACHINE *mach)
+{ j_f(JFMT_INS(j, MEMORY_SIZE), mach); }
+
 void sys_newline(uint32_t ins, MACHINE *mach)
 { putchar('\n'); }
 
@@ -252,6 +218,3 @@ void sys_print_hex(uint32_t ins, MACHINE *mach)
 
 void sys_read_int(uint32_t ins, MACHINE *mach)
 { scanf("%d", mach->gpr + _v0_); }
-
-    
-    

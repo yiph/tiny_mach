@@ -14,7 +14,7 @@ typedef struct machine {
     uint32_t memory[MEMORY_SIZE];
 } MACHINE;
 
-/* Interfaces to runmachine */
+/* Interfaces to run machine */
 void init_environment();
 MACHINE *make_machine();
 void free_machine(MACHINE *mach);
@@ -150,9 +150,96 @@ int run_machine(MACHINE *mach);
 #define _jr_      0x10
 
 /* Syscall */
-#define _sys_newline_      0
-#define _sys_print_int_    1
-#define _sys_print_hex_    2
-#define _sys_read_int_     3
+#define _sys_halt_         0
+#define _sys_newline_      1
+#define _sys_print_int_    2
+#define _sys_print_hex_    3
+#define _sys_read_int_     4
+
+/* Macros for generating codes about listing instructions */
+#define OP_SET_FUND(SENT)                               \
+    SENT##_OP(rfmt);                                    \
+    SENT##_OP(j);                                       \
+    SENT##_OP(jal);                                     \
+    SENT##_OP(syscall);                                 \
+    SENT##_OP(addi);                                    \
+    SENT##_OP(andi);                                    \
+    SENT##_OP(ori);                                     \
+    SENT##_OP(slti);                                    \
+    SENT##_OP(seqi);                                    \
+    SENT##_OP(li);                                      \
+    SENT##_OP(lli);                                     \
+    SENT##_OP(lui);                                     \
+    SENT##_OP(lw);                                      \
+    SENT##_OP(sw);                                      \
+    SENT##_OP(bze);                                     \
+    SENT##_OP(bnz)
+#define OP_SET_RFMT(SENT)                               \
+    SENT##_OP(nop);                                     \
+    SENT##_OP(move);                                    \
+    SENT##_OP(add);                                     \
+    SENT##_OP(sub);                                     \
+    SENT##_OP(mul);                                     \
+    SENT##_OP(div);                                     \
+    SENT##_OP(mflo);                                    \
+    SENT##_OP(mfhi);                                    \
+    SENT##_OP(sll);                                     \
+    SENT##_OP(srl);                                     \
+    SENT##_OP(sra);                                     \
+    SENT##_OP(and);                                     \
+    SENT##_OP(or);                                      \
+    SENT##_OP(not);                                     \
+    SENT##_OP(slt);                                     \
+    SENT##_OP(seq);                                     \
+    SENT##_OP(jr)
+#define OP_SET_ALL(SENT)                                \
+    OP_SET_FUND(SENT);                                  \
+    OP_SET_RFMT(SENT)
+
+#define SYSCALL_SET(SENT)                               \
+    SENT##_SYSCALL(halt);                               \
+    SENT##_SYSCALL(newline);                            \
+    SENT##_SYSCALL(print_int);                          \
+    SENT##_SYSCALL(print_hex);                          \
+    SENT##_SYSCALL(read_int)
+
+
+
+/* Macros for generating codes about listing registers */
+#define REG_SET(SENT)                                     \
+    SENT##_REG(at);                                       \
+    SENT##_REG(k0);                                       \
+    SENT##_REG(k1);                                       \
+    SENT##_REG(v0);                                       \
+    SENT##_REG(v1);                                       \
+    SENT##_REG(a0);                                       \
+    SENT##_REG(a1);                                       \
+    SENT##_REG(a2);                                       \
+    SENT##_REG(a3);                                       \
+    SENT##_REG(a4);                                       \
+    SENT##_REG(t0);                                       \
+    SENT##_REG(t1);                                       \
+    SENT##_REG(t2);                                       \
+    SENT##_REG(t3);                                       \
+    SENT##_REG(t4);                                       \
+    SENT##_REG(t5);                                       \
+    SENT##_REG(t6);                                       \
+    SENT##_REG(t7);                                       \
+    SENT##_REG(t8);                                       \
+    SENT##_REG(t9);                                       \
+    SENT##_REG(s0);                                       \
+    SENT##_REG(s1);                                       \
+    SENT##_REG(s2);                                       \
+    SENT##_REG(s3);                                       \
+    SENT##_REG(s4);                                       \
+    SENT##_REG(s5);                                       \
+    SENT##_REG(s6);                                       \
+    SENT##_REG(s7);                                       \
+    SENT##_REG(gp);                                       \
+    SENT##_REG(sp);                                       \
+    SENT##_REG(fp);                                       \
+    SENT##_REG(ra)
+
+
 
 #endif /* _MACHINE_H_ */
