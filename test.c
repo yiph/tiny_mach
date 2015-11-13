@@ -13,7 +13,7 @@ uint32_t factorial_ins[1000] = {
     RFMT_INS(move, a0, v0, nil, 0),
     SYSCALL_INS(sys_print_int),
     SYSCALL_INS(sys_newline),
-    JFMT_INS(j, MEMORY_SIZE-1), // exit
+    SYSCALL_INS(sys_halt), // exit
     IFMT_INS(addi, sp, sp, -2), // factorial proc.
     IFMT_INS(sw,   ra, sp,  0),
     IFMT_INS(sw,   a0, sp,  1),
@@ -36,7 +36,9 @@ int main(void)
 {
     init_environment();
     MACHINE *mach = make_machine();
-    
+    for (int i = 0; i < 23; i++)
+        printf("ins %d: %08x\n", i, factorial_ins[i]);
+    printf("\n");
     init_machine(mach);
     load_memory(factorial_ins, 100, mach, 0);
     run_machine(mach);

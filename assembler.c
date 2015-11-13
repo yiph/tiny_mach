@@ -99,10 +99,12 @@ OBJ_CODE *assemble(FILE *src)
     char *buffer = malloc(MAX_LINE_SIZE * sizeof(char));
     CHECK_MALLOC(buffer);
     int line_num = 1;
-    
-    for (char *line = fgets(buffer, MAX_LINE_SIZE, src);
-         !feof(src); line = fgets(buffer, MAX_LINE_SIZE, src), line_num++) {
-            //printf("line %d: %s", line_num, buffer);
+
+    char *line;
+    while (!feof(src)) {
+        printf("line %d: %s", line_num, buffer);
+        line = fgets(buffer, MAX_LINE_SIZE, src);
+        line_num++;
         while (isspace(*line)) line++;
         if (is_end(line))      continue;
         char *token;
@@ -125,9 +127,10 @@ OBJ_CODE *assemble(FILE *src)
             if (is_end(line))      continue;
             line = get_token(&token, line);
         }
-
+        
+        
             /* check instructions */
-        if (*line == ' ') {
+        if (isspace(*line)) {
             uint32_t ins_code;
             uint32_t opcode = lookup_table_and_report_error(token, fund_table, "Unknown instruction", line_num, token);
             if (opcode == _rfmt_) {
@@ -243,7 +246,7 @@ OBJ_CODE *assemble(FILE *src)
                 ins_code = opcode << OPCODE_OFFSET
                     | reg0 << REG0_OFFSET
                     | reg1 << REG1_OFFSET
-                    | c << CONST_OFFSET;
+                    | (c & CONST_FIELD ) << CONST_OFFSET;
             }
             append(ins_code, ins_list);
             ins_count++;
@@ -269,7 +272,7 @@ OBJ_CODE *assemble(FILE *src)
     int i = 0;
     for (int i = 0; has_next(ins_list); i++) {
         ins[i] = next(ins_list);
-        printf("ins %d: %08x\n", i, ins[i]);
+        
     }
 
     LIST *undetermined_addr_list = make_list();
@@ -306,6 +309,10 @@ OBJ_CODE *assemble(FILE *src)
     init_iterator(undetermined_addr_list);
     for (i = 0; has_next(undetermined_addr_list); i++)
         undetermined_addr[i] = next(undetermined_addr_list);
+
+    for (i = 0; i < ins_count; i++)
+        printf("ins %d: %08x\n", i, ins[i]);
+    
     
     OBJ_CODE *obj_code = malloc(sizeof(OBJ_CODE));
     CHECK_MALLOC(obj_code);
