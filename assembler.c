@@ -9,7 +9,7 @@
 
 #define MAX_LINE_SIZE 1000
 
-#define DEBUG 0
+#define DEBUG 1
 
 #define FLAG(S) printf(#S"\n")
 #define PRINT(I) printf("%d\n", (I))

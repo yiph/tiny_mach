@@ -119,16 +119,16 @@ void addi_f(uint32_t ins, MACHINE *mach)
 { mach->gpr[REG0(ins)] = mach->gpr[REG1(ins)] + ((int16_t) CONST(ins)); }
 
 void andi_f(uint32_t ins, MACHINE *mach)
-{ mach->gpr[REG0(ins)] = mach->gpr[REG1(ins)] & ((int16_t) CONST(ins)); }
+{ mach->gpr[REG0(ins)] = mach->gpr[REG1(ins)] & ((int32_t) CONST(ins)); }
 
 void ori_f(uint32_t ins, MACHINE *mach)
-{ mach->gpr[REG0(ins)] = mach->gpr[REG1(ins)] | ((int16_t) CONST(ins)); }
+{ mach->gpr[REG0(ins)] = mach->gpr[REG1(ins)] | ((int32_t) CONST(ins)); }
 
 void slti_f(uint32_t ins, MACHINE *mach)
-{ mach->gpr[REG0(ins)] = mach->gpr[REG1(ins)] < ((int32_t) CONST(ins)); }
+{ mach->gpr[REG0(ins)] = mach->gpr[REG1(ins)] < ((int16_t) CONST(ins)); }
 
 void seqi_f(uint32_t ins, MACHINE *mach)
-{ mach->gpr[REG0(ins)] = mach->gpr[REG1(ins)] == ((int32_t) CONST(ins)); }
+{ mach->gpr[REG0(ins)] = mach->gpr[REG1(ins)] == ((int16_t) CONST(ins)); }
 
 void li_f(uint32_t ins, MACHINE *mach)
 { mach->gpr[REG0(ins)] = CONST(ins); }
@@ -146,10 +146,10 @@ void sw_f(uint32_t ins, MACHINE *mach)
 { mach->memory[CONST(ins) + mach->gpr[REG1(ins)]] = mach->gpr[REG0(ins)]; }
 
 void bze_f(uint32_t ins, MACHINE *mach)
-{ if (mach->gpr[REG0(ins)] == 0)  mach->pc = mach->pc + CONST(ins); }
+{ if (mach->gpr[REG0(ins)] == 0)  mach->pc = mach->pc + ((int16_t) CONST(ins)); }
 
 void bnz_f(uint32_t ins, MACHINE *mach)
-{ if (mach->gpr[REG0(ins)] != 0)  mach->pc = mach->pc + CONST(ins); }
+{ if (mach->gpr[REG0(ins)] != 0)  mach->pc = mach->pc + ((int16_t) CONST(ins)); }
 
 // R-format
 void nop_f(uint32_t ins, MACHINE *mach)
