@@ -9,10 +9,10 @@
 
 #define MAX_LINE_SIZE 1000
 
+#define DEBUG 0
+
 #define FLAG(S) printf(#S"\n")
 #define PRINT(I) printf("%d\n", (I))
-
-
 
 typedef struct SYMBOL_TABLE ST;
 ST *make_ST(void);
@@ -42,15 +42,13 @@ int is_end(char *line);
 void report_and_abort(int line_num, char *line);
 uint32_t lookup_table_and_report_error(char *token, ST *st, char *errormsg, int line_num, char *line);
 
-#define CHECK_MALLOC(ptr)                                       \
-    do {                                                        \
-        if ((ptr) == NULL) {                                    \
-            printf("Fail in malloc at line: %d\n", __LINE__);   \
-            exit(0);                                            \
-        }                                                       \
+#define CHECK_MALLOC(ptr)                                               \
+    do {                                                                \
+        if ((ptr) == NULL) {                                            \
+            printf("Fail to allocate memory for "#ptr" at line: %d in "__FILE__"\n", __LINE__); \
+            exit(0);                                                    \
+        }                                                               \
     } while(0)
-        
-    
 
 #define PUT_OPCODE_OP(OP_NAME)                  \
     put(#OP_NAME, _##OP_NAME##_, fund_table)
@@ -102,9 +100,12 @@ OBJ_CODE *assemble(FILE *src)
 
     char *line;
     while (!feof(src)) {
-        printf("line %d: %s", line_num, buffer);
         line = fgets(buffer, MAX_LINE_SIZE, src);
+        #if DEBUG
+        printf("line %d: %s", line_num, buffer);
+        #endif
         line_num++;
+        
         while (isspace(*line)) line++;
         if (is_end(line))      continue;
         char *token;
@@ -310,9 +311,11 @@ OBJ_CODE *assemble(FILE *src)
     for (i = 0; has_next(undetermined_addr_list); i++)
         undetermined_addr[i] = next(undetermined_addr_list);
 
+    #if DEBUG
+    printf("\nMachine code:\n");
     for (i = 0; i < ins_count; i++)
         printf("ins %d: %08x\n", i, ins[i]);
-    
+    #endif
     
     OBJ_CODE *obj_code = malloc(sizeof(OBJ_CODE));
     CHECK_MALLOC(obj_code);

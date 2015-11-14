@@ -18,14 +18,14 @@ int main(int argc, char **argv)
         return 0;
     }
     init_environment();
-    printf(">> Running assembler ...\n");
+    printf(">>> Running assembler ...\n");
     OBJ_CODE *obj_code = assemble(src);
     MACHINE *mach = make_machine();
     init_machine(mach);
     load_memory(obj_code->ins, obj_code->ins_count, mach, 0);
-    printf(">> Running Tiny Machine ...\n");
+    printf(">>> Running Tiny Machine ...\n");
     run_machine(mach);
-    printf("\n>> Done.\n");
+    printf("\n>>> Done.\n");
     free_machine(mach);
     free_obj_code(obj_code);
     return 0;

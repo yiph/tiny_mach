@@ -21,6 +21,8 @@
     rfmt_dispatch[_##OP_NAME##_] = OP_NAME##_f
 #define INIT_RFMT_DISPATCH() do { OP_SET_RFMT(ASSIGN_RFMT_DISPATCH); } while(0)
 
+
+
 /* Declaration */
 DECLARE_INS_F; // Declare all functions of form INS_f
 static void (*fund_dispatch[MAX_OPCODE + 1])(uint32_t ins, MACHINE *mach);
@@ -61,7 +63,12 @@ void init_machine(MACHINE *mach)
 
 MACHINE *make_machine()
 {
-    return (MACHINE *) malloc(sizeof(MACHINE));
+    MACHINE *mach =  (MACHINE *) malloc(sizeof(MACHINE));
+    if (mach == NULL) {                                        \
+        printf("Fail in malloc at line: %d in "__FILE__"\n", __LINE__);       \
+        exit(0);                                                \
+    }
+    return mach;
 }
 
 void free_machine(MACHINE *mach)
