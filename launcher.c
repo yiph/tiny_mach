@@ -25,7 +25,7 @@ int main(int argc, char **argv)
     load_memory(obj_code->ins, obj_code->ins_count, mach, 0);
     printf(">>> Running Tiny Machine ...\n");
     run_machine(mach);
-    printf("\n>>> Done.\n");
+    printf(">>> Done.\n");
     free_machine(mach);
     free_obj_code(obj_code);
     return 0;

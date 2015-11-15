@@ -19,7 +19,7 @@ void init_environment();
 MACHINE *make_machine();
 void free_machine(MACHINE *mach);
 void init_machine(MACHINE *mach);
-void load_memory(int32_t words[], int length, MACHINE *mach, int start_addr);
+void load_memory(uint32_t words[], int length, MACHINE *mach, int start_addr);
 int run_machine(MACHINE *mach);
 
 #define _nil_         0 // for unused part of instruction

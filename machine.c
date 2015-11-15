@@ -76,7 +76,7 @@ void free_machine(MACHINE *mach)
     free(mach);
 }
 
-void load_memory(int32_t words[], int length, MACHINE *mach, int start_addr)
+void load_memory(uint32_t words[], int length, MACHINE *mach, int start_addr)
 {
     for (int addr = start_addr, i = 0; i < length && addr < MEMORY_SIZE; addr++, i++)
         mach->memory[addr] = words[i];

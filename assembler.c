@@ -9,7 +9,7 @@
 
 #define MAX_LINE_SIZE 1000
 
-#define DEBUG 1
+#define DEBUG 0
 
 #define FLAG(S) printf(#S"\n")
 #define PRINT(I) printf("%d\n", (I))
@@ -96,16 +96,16 @@ OBJ_CODE *assemble(FILE *src)
     LIST *pending_ins = make_list();
     char *buffer = malloc(MAX_LINE_SIZE * sizeof(char));
     CHECK_MALLOC(buffer);
-    int line_num = 1;
+    int line_num = 0;
 
     char *line;
     while (!feof(src)) {
+        line_num++;
         line = fgets(buffer, MAX_LINE_SIZE, src);
         #if DEBUG
         printf("line %d: %s", line_num, buffer);
         #endif
-        line_num++;
-        
+
         while (isspace(*line)) line++;
         if (is_end(line))      continue;
         char *token;
@@ -129,39 +129,59 @@ OBJ_CODE *assemble(FILE *src)
             line = get_token(&token, line);
         }
         
-        
             /* check instructions */
         if (isspace(*line)) {
             uint32_t ins_code;
-            uint32_t opcode = lookup_table_and_report_error(token, fund_table, "Unknown instruction", line_num, token);
-            if (opcode == _rfmt_) {
-                uint32_t reg0 = 0;
-                uint32_t reg1 = 0;
-                uint32_t reg2 = 0;
-                uint32_t shamt = 0;
-                uint32_t funct = lookup_table_and_report_error(token, rfmt_table, "Unknown instruction", line_num, token);
+            uint32_t opcode
+                = lookup_table_and_report_error(token, fund_table,
+                                                "Unknown instruction", line_num, buffer);
+            uint32_t reg0 = 0;
+            uint32_t reg1 = 0;
+            uint32_t reg2 = 0;
+            uint32_t shamt = 0;
+            uint32_t funct = 0;
+            uint32_t c = 0;
+            uint32_t syscall_code = 0;
+
+            switch (opcode) {
+            case _rfmt_:
+                reg2 = 0;
+                shamt = 0;
+                funct = lookup_table_and_report_error(token, rfmt_table,
+                                                      "Unknown instruction", line_num, buffer);
                 free(token);
 
-                if (funct == _nop_)
+                if (funct == _nop_) {
+                    while (isspace(*line)) line++;
+                    if (!is_end(line))      report_and_abort(line_num, buffer);
                     goto rfmt_done;
+                }
 
                 while (isspace(*line)) line++;
                 if (is_end(line))      report_and_abort(line_num, buffer);
                 line = get_token(&token, line);
-                reg0 = lookup_table_and_report_error(token, reg_table, "Unknown register", line_num, token);
+                reg0 = lookup_table_and_report_error(token, reg_table,
+                                                     "Unknown register", line_num, buffer);
                 free(token);
                 
-                if (funct == _jr_ || funct == _mfhi_ || funct == _mflo_)
+                if (funct == _jr_ || funct == _mfhi_ || funct == _mflo_) {
+                    while (isspace(*line)) line++;
+                    if (!is_end(line))      report_and_abort(line_num, buffer);
                     goto rfmt_done;
+                }
+                
 
                 while (isspace(*line)) line++;
                 if (is_end(line))      report_and_abort(line_num, buffer);
                 line = get_token(&token, line);
-                reg1 = lookup_table_and_report_error(token, reg_table, "Unknown register", line_num, token);
+                reg1 = lookup_table_and_report_error(token, reg_table, "Unknown register", line_num, buffer);
                 free(token);
 
-                if (funct == _move_ || funct == _mul_ || funct == _div_ || funct == _not_)
+                if (funct == _move_ || funct == _mul_ || funct == _div_ || funct == _not_) {
+                    while (isspace(*line)) line++;
+                    if (!is_end(line))      report_and_abort(line_num, buffer);
                     goto rfmt_done;
+                }
                 
                 while (isspace(*line)) line++;
                 if (is_end(line))      report_and_abort(line_num, buffer);
@@ -170,20 +190,22 @@ OBJ_CODE *assemble(FILE *src)
                     shamt = atoi(token);
                 }
                 else {
-                    reg2 = lookup_table_and_report_error(token, reg_table, "Unknown register", line_num, token);
+                    reg2 = lookup_table_and_report_error(token, reg_table,
+                                                         "Unknown register", line_num, buffer);
                 }
                 free(token);
-                
-              rfmt_done:
+
+                rfmt_done:
                 ins_code = opcode << OPCODE_OFFSET
                     | reg0 << REG0_OFFSET
                     | reg1 << REG1_OFFSET
                     | reg2 << REG2_OFFSET
                     | shamt << SHAMT_OFFSET
                     | funct << FUNCT_OFFSET;
-                
-            }
-            else if (opcode == _j_ || opcode == _jal_) {
+                break;
+
+            case _j_:
+            case _jal_:
                 while (isspace(*line)) line++;
                 if (is_end(line))      report_and_abort(line_num, buffer);
                 line = get_token(&token, line);
@@ -198,23 +220,23 @@ OBJ_CODE *assemble(FILE *src)
                 }
                 append(ins_count, pending_ins);
                 ins_code = opcode << OPCODE_OFFSET | tag_code << ADDR_OFFSET;
-            }
-            else if (opcode == _syscall_) {
+                break;
+                
+            case _syscall_:
                 while (isspace(*line)) line++;
                 if (is_end(line))      report_and_abort(line_num, buffer);
                 line = get_token(&token, line);
-                uint32_t syscall_code = lookup_table_and_report_error(token, syscall_table, "Unknown syscall", line_num, token);
+                syscall_code = lookup_table_and_report_error(token, syscall_table,
+                                                             "Unknown syscall", line_num, buffer);
                 ins_code = opcode << OPCODE_OFFSET | syscall_code << ADDR_OFFSET;
-            }
-            else { // I-format
-                uint32_t reg0 = 0;
-                uint32_t reg1 = 0;
-                uint32_t c = 0;
-
+                break;
+                
+            default: // I-format
                 while (isspace(*line)) line++;
                 if (is_end(line))      report_and_abort(line_num, buffer);
                 line = get_token(&token, line);
-                reg0 = lookup_table_and_report_error(token, reg_table, "Unknown register", line_num, token);
+                reg0 = lookup_table_and_report_error(token, reg_table,
+                                                     "Unknown register", line_num, buffer);
                 free(token);
 
                 if (opcode != _li_ && opcode != _lli_ && opcode != _lui_
@@ -222,7 +244,8 @@ OBJ_CODE *assemble(FILE *src)
                     while (isspace(*line)) line++;
                     if (is_end(line))      report_and_abort(line_num, buffer);
                     line = get_token(&token, line);
-                    reg1 = lookup_table_and_report_error(token, reg_table, "Unknown register", line_num, token);
+                    reg1 = lookup_table_and_report_error(token, reg_table,
+                                                         "Unknown register", line_num, buffer);
                     free(token);
                 }
                 
@@ -241,14 +264,19 @@ OBJ_CODE *assemble(FILE *src)
                     append(ins_count, pending_ins);
                 }
                 else {
-                    c = atoi(token);
+                    c = strtol(token, NULL, 0);
+                    free(token);
                 }
-                
                 ins_code = opcode << OPCODE_OFFSET
                     | reg0 << REG0_OFFSET
                     | reg1 << REG1_OFFSET
                     | (c & CONST_FIELD ) << CONST_OFFSET;
+                break;
             }
+            
+            while (isspace(*line)) line++;
+            if (!is_end(line))      report_and_abort(line_num, buffer);
+            
             append(ins_code, ins_list);
             ins_count++;
         }
@@ -264,25 +292,20 @@ OBJ_CODE *assemble(FILE *src)
     free_ST(syscall_table);
     free_ST(tags_num);
     free(buffer);
- 
-    
+     
         /* rearrange and adjust instructions */
     uint32_t *ins = malloc(ins_count * sizeof(uint32_t));
     CHECK_MALLOC(ins);
     init_iterator(ins_list);
     int i = 0;
-    for (int i = 0; has_next(ins_list); i++) {
+    for (int i = 0; has_next(ins_list); i++)
         ins[i] = next(ins_list);
-        
-    }
 
     LIST *undetermined_addr_list = make_list();
     int undetermined_addr_count = 0;
     int *tags_addr_query = static_array(tags_addr);
-    int tags_addr_num = size_dynarray(tags_addr);
+//    int tags_addr_num = size_dynarray(tags_addr);
     init_iterator(pending_ins);
-
-    
     while (has_next(pending_ins)) {
         int pos = next(pending_ins);
         int opcode = OPCODE(ins[pos]);
@@ -290,12 +313,14 @@ OBJ_CODE *assemble(FILE *src)
             uint32_t temp_addr = CONST(ins[pos]);
             uint32_t real_addr = tags_addr_query[temp_addr];
             int32_t offset = real_addr - pos - 1;
-            ins[pos] = (ins[pos] & (~CONST_FIELD)) | ((((uint32_t) offset) & CONST_FIELD) << CONST_OFFSET);
+            ins[pos] = (ins[pos] & (~CONST_FIELD))
+                | ((((uint32_t) offset) & CONST_FIELD) << CONST_OFFSET);
         }
         else { // J-format
             uint32_t temp_addr = ADDR(ins[pos]);
             uint32_t real_addr = tags_addr_query[temp_addr];
-            ins[pos] = (ins[pos] & (~ADDR_FIELD)) | ((real_addr & ADDR_FIELD) << ADDR_OFFSET);
+            ins[pos] = (ins[pos] & (~ADDR_FIELD))
+                | ((real_addr & ADDR_FIELD) << ADDR_OFFSET);
             append(pos, undetermined_addr_list);
         }
     }
@@ -321,7 +346,7 @@ OBJ_CODE *assemble(FILE *src)
     CHECK_MALLOC(obj_code);
     obj_code->ins = ins;
     obj_code->ins_count = ins_count;
-    obj_code->undetermined_addr;
+    obj_code->undetermined_addr = undetermined_addr;
     return obj_code;
 }
 
@@ -331,7 +356,6 @@ void free_obj_code(OBJ_CODE *obj)
     free(obj->undetermined_addr);
     free(obj);
 }
-
 
 int is_end(char *line)
 {
@@ -350,10 +374,9 @@ char *get_token(char **token, char *src)
         //printf("%s\n", *token);
     return src + i;
 }
-
 void report_and_abort(int line_num, char *line)
 {
-    printf("Error: line %d: %s\n", line_num, line);
+    printf("Error: Bad instruction at line %d: \n\t%s\n", line_num, line);
     exit(0);
 }
 
@@ -363,7 +386,7 @@ uint32_t lookup_table_and_report_error(char *token, ST *st, char *errormsg, int 
         return get(token, st);
     }
     else {
-        printf("%s: line %d: %s\n", errormsg, line_num, token);
+        printf("Error: %s at line %d: %s\n\t%s\n", errormsg, line_num, token, line);
         exit(0);
     }
 }
@@ -484,6 +507,7 @@ LIST *make_list()
     list->head = NULL;
     list->tail = NULL;
     list->current = NULL;
+    return list;
 }
 
 void free_list(LIST *list)
