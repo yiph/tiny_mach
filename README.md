@@ -2,6 +2,27 @@
 
 This is a tiny virtual machine (based on MIPS) as a practice for myself.
 
+Compile tiny machine
+
+> gcc -std=c99 launcher.c assembler.c machine.c -o tm
+
+Run tiny machine
+
+First sample:
+
+> tm factorial.tms
+
+Then enter an integer greater than 0
+
+> >>> Running assembler ...
+> >>> Running Tiny Machine ...
+> 3
+> 6
+> >>> Done.
+
+The second sample is fibonacci.tms. User entering n, it will compute first n terms in fibnacci sequence.
+
+
 ## Registers
 
   * GPR

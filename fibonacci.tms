@@ -1,0 +1,33 @@
+		syscall read_int
+		move	s0	v0
+		li		s1	0
+		syscall	newline
+loop:	slt		t0	s1	s0
+		bze		t0	exit
+		move	a0	s1
+		jal		fib
+		move	a0	v0
+		syscall	print_int
+		syscall	newline	
+		addi	s1	s1	1
+		j loop
+exit:	syscall	halt
+fib:	slti	t0	a0	2
+		bze		t0	rec
+		move	v0	a0
+		jr		ra
+rec:	addi	sp	sp	-2
+		sw		ra	sp	1
+		sw		s0	sp	0
+		move	s0	a0
+		addi	a0	s0	-1
+		jal		fib
+		addi	a0	s0	-2
+		move	s0	v0
+		jal		fib
+		add		v0	v0	s0
+		lw		s0	sp	0
+		lw		ra	sp	1
+		addi	sp	sp	2
+		jr		ra
+		
